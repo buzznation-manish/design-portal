@@ -207,8 +207,8 @@ $_activePage     = 'reports.php';
 <script>
 $(function () {
     $(document).on('click', '.btn-toggle-projects', function () {
-        const targetId = $(this).data('target');
-        const $row = $('#' + CSS.escape(targetId));
+        const rowId = $(this).data('target');
+        const $row = $('#' + CSS.escape(rowId));
         const isVisible = !$row.hasClass('d-none');
         $row.toggleClass('d-none', isVisible);
         $(this).html(isVisible
