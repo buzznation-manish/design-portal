@@ -73,45 +73,13 @@ $_activePage     = 'reports.php';
                             <td class="text-center"><span class="badge-status badge-status-completed"><?= $row['completed'] ?></span></td>
                             <td class="text-center">
                                 <?php if ($row['total'] > 0): ?>
-                                <button class="btn btn-sm btn-outline-primary btn-toggle-projects"
-                                        data-projects="<?= e(json_encode($row['projects'])) ?>"
-                                        data-target="dr-<?= e($row['designer']) ?>">
-                                    <i class="bi bi-chevron-down me-1"></i>Show
-                                </button>
+                                <a href="/admin/report_projects.php?type=designer&name=<?= urlencode($row['designer']) ?>"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Show
+                                </a>
                                 <?php else: ?>
                                 <span class="text-muted small">—</span>
                                 <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr class="project-detail-row d-none" id="dr-<?= e($row['designer']) ?>">
-                            <td colspan="6" class="p-0">
-                                <div class="p-3 bg-light border-top">
-                                    <table class="table table-sm table-bordered mb-0">
-                                        <thead class="table-secondary">
-                                            <tr>
-                                                <th>Client</th>
-                                                <th>Event</th>
-                                                <th>Status</th>
-                                                <th>End Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($row['projects'] as $proj): ?>
-                                            <tr>
-                                                <td><?= e($proj['client_name']) ?></td>
-                                                <td><?= e($proj['event_name']) ?></td>
-                                                <td>
-                                                    <?php
-                                                    $sc = ['Pending'=>'badge-status-pending','Ongoing'=>'badge-status-ongoing','Completed'=>'badge-status-completed'][$proj['status']] ?? 'badge-status-pending';
-                                                    ?>
-                                                    <span class="badge-status <?= $sc ?>"><?= e($proj['status']) ?></span>
-                                                </td>
-                                                <td><?= e($proj['end_date']) ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
                             </td>
                         </tr>
                         <?php endforeach; endif; ?>
@@ -152,45 +120,13 @@ $_activePage     = 'reports.php';
                             <td class="text-center"><span class="badge-status badge-status-completed"><?= $row['completed'] ?></span></td>
                             <td class="text-center">
                                 <?php if ($row['total'] > 0): ?>
-                                <button class="btn btn-sm btn-outline-primary btn-toggle-projects"
-                                        data-projects="<?= e(json_encode($row['projects'])) ?>"
-                                        data-target="sr-<?= e($row['sales_user']) ?>">
-                                    <i class="bi bi-chevron-down me-1"></i>Show
-                                </button>
+                                <a href="/admin/report_projects.php?type=sales&name=<?= urlencode($row['sales_user']) ?>"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Show
+                                </a>
                                 <?php else: ?>
                                 <span class="text-muted small">—</span>
                                 <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr class="project-detail-row d-none" id="sr-<?= e($row['sales_user']) ?>">
-                            <td colspan="6" class="p-0">
-                                <div class="p-3 bg-light border-top">
-                                    <table class="table table-sm table-bordered mb-0">
-                                        <thead class="table-secondary">
-                                            <tr>
-                                                <th>Client</th>
-                                                <th>Event</th>
-                                                <th>Status</th>
-                                                <th>End Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($row['projects'] as $proj): ?>
-                                            <tr>
-                                                <td><?= e($proj['client_name']) ?></td>
-                                                <td><?= e($proj['event_name']) ?></td>
-                                                <td>
-                                                    <?php
-                                                    $sc = ['Pending'=>'badge-status-pending','Ongoing'=>'badge-status-ongoing','Completed'=>'badge-status-completed'][$proj['status']] ?? 'badge-status-pending';
-                                                    ?>
-                                                    <span class="badge-status <?= $sc ?>"><?= e($proj['status']) ?></span>
-                                                </td>
-                                                <td><?= e($proj['end_date']) ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
                             </td>
                         </tr>
                         <?php endforeach; endif; ?>
@@ -206,17 +142,6 @@ $_activePage     = 'reports.php';
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
 $(function () {
-    $(document).on('click', '.btn-toggle-projects', function () {
-        const rowId = $(this).data('target');
-        const $row = $('#' + CSS.escape(rowId));
-        const isVisible = !$row.hasClass('d-none');
-        $row.toggleClass('d-none', isVisible);
-        $(this).html(isVisible
-            ? '<i class="bi bi-chevron-down me-1"></i>Show'
-            : '<i class="bi bi-chevron-up me-1"></i>Hide'
-        );
-    });
-
     $('#sidebarToggle').on('click', function () {
         $('.sidebar').toggleClass('open');
         $('.sidebar-overlay').toggleClass('visible');
