@@ -17,7 +17,9 @@ if (strlen($name) > 100) {
 try {
     $id = createDesigner($name);
     echo json_encode(['success' => true, 'id' => $id, 'name' => $name]);
-} catch (Exception $e) {
-    $msg = str_contains($e->getMessage(), 'Duplicate') ? 'A designer with that name already exists.' : 'Failed to add designer.';
+} catch (PDOException $e) {
+    $msg = ($e->getCode() === '23000') ? 'A designer with that name already exists.' : 'Failed to add designer.';
     echo json_encode(['success' => false, 'message' => $msg]);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Failed to add designer.']);
 }

@@ -17,7 +17,9 @@ if (strlen($name) > 100) {
 try {
     $id = createSalesUser($name);
     echo json_encode(['success' => true, 'id' => $id, 'name' => $name]);
-} catch (Exception $e) {
-    $msg = str_contains($e->getMessage(), 'Duplicate') ? 'A sales user with that name already exists.' : 'Failed to add sales user.';
+} catch (PDOException $e) {
+    $msg = ($e->getCode() === '23000') ? 'A sales user with that name already exists.' : 'Failed to add sales user.';
     echo json_encode(['success' => false, 'message' => $msg]);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Failed to add sales user.']);
 }
