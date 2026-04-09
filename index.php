@@ -97,6 +97,40 @@ $stats = getDashboardStats();
             </div>
         </div>
 
+        <!-- Filter Bar -->
+        <div class="row g-2 px-3 pt-2 pb-3 border-bottom" id="filterBar">
+            <div class="col-sm-auto">
+                <input type="text" class="form-control form-control-sm" id="filterClient" placeholder="Client name…">
+            </div>
+            <div class="col-sm-auto">
+                <input type="text" class="form-control form-control-sm" id="filterEvent" placeholder="Event name…">
+            </div>
+            <div class="col-sm-auto">
+                <select class="form-select form-select-sm" id="filterAssignedBy" style="min-width:160px">
+                    <option value="">All Sales Users</option>
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <select class="form-select form-select-sm" id="filterDesigner" style="min-width:160px">
+                    <option value="">All Designers</option>
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <select class="form-select form-select-sm" id="filterDays">
+                    <option value="">All Deadlines</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="urgent">Urgent (≤ 2 days)</option>
+                    <option value="week">This Week (≤ 6 days)</option>
+                    <option value="month">This Month (≤ 29 days)</option>
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <button class="btn btn-sm btn-outline-secondary" id="btnClearFilters">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </button>
+            </div>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-light">

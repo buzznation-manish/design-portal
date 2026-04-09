@@ -27,60 +27,7 @@ $fullName  = e($_SESSION['admin_full_name'] ?? 'Admin');
 </head>
 <body class="admin-body">
 
-<!-- Sidebar Overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<!-- ── Sidebar ─────────────────────────────────────────── -->
-<nav class="sidebar" id="sidebar">
-
-    <div class="sidebar-brand">
-        <i class="bi bi-palette2 fs-3 text-indigo" style="color:#818cf8"></i>
-        <div>
-            <div class="sidebar-brand-text">Design Portal</div>
-            <div class="sidebar-brand-sub">Project Management</div>
-        </div>
-    </div>
-
-    <ul class="sidebar-nav">
-        <li>
-            <span class="sidebar-section-label">Main</span>
-        </li>
-        <li>
-            <a href="/admin/index.php" class="sidebar-link active">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-        </li>
-        <li>
-            <button type="button" class="sidebar-link" id="btnAddProjectTop">
-                <i class="bi bi-plus-circle"></i> Add Project
-            </button>
-        </li>
-        <li>
-            <span class="sidebar-section-label">Navigation</span>
-        </li>
-        <li>
-            <a href="/" class="sidebar-link" target="_blank" rel="noopener noreferrer">
-                <i class="bi bi-globe"></i> Client View
-                <i class="bi bi-box-arrow-up-right ms-auto" style="font-size:.7rem;opacity:.5"></i>
-            </a>
-        </li>
-    </ul>
-
-    <div class="sidebar-footer">
-        <div class="sidebar-user-info">
-            <div class="sidebar-user-avatar"><?= strtoupper(substr($_SESSION['admin_username'] ?? 'A', 0, 1)) ?></div>
-            <div>
-                <div class="sidebar-username"><?= $fullName ?></div>
-                <div style="font-size:.7rem;color:rgba(255,255,255,.4)">@<?= $username ?></div>
-            </div>
-        </div>
-        <a href="/admin/logout.php" class="btn btn-sm btn-outline-light w-100"
-           onclick="return confirm('Log out?')">
-            <i class="bi bi-box-arrow-right me-1"></i>Logout
-        </a>
-    </div>
-
-</nav>
+<?php $_activePage = 'index.php'; require_once __DIR__ . '/../includes/admin_sidebar.php'; ?>
 
 <!-- ── Main Content ─────────────────────────────────────── -->
 <div class="main-content">
@@ -164,6 +111,40 @@ $fullName  = e($_SESSION['admin_full_name'] ?? 'Admin');
                     </div>
                     <button class="btn btn-sm btn-primary" id="btnAddProject">
                         <i class="bi bi-plus-lg me-1"></i>Add Project
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="row g-2 mb-0 px-3 pt-3 pb-2 border-bottom" id="filterBar">
+                <div class="col-md-auto">
+                    <input type="text" class="form-control form-control-sm" id="filterClient" placeholder="Client name…">
+                </div>
+                <div class="col-md-auto">
+                    <input type="text" class="form-control form-control-sm" id="filterEvent" placeholder="Event name…">
+                </div>
+                <div class="col-md-auto">
+                    <select class="form-select form-select-sm" id="filterAssignedBy" style="min-width:160px">
+                        <option value="">All Sales Users</option>
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <select class="form-select form-select-sm" id="filterDesigner" style="min-width:160px">
+                        <option value="">All Designers</option>
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <select class="form-select form-select-sm" id="filterDays">
+                        <option value="">All Deadlines</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="urgent">Urgent (≤ 2 days)</option>
+                        <option value="week">This Week (≤ 6 days)</option>
+                        <option value="month">This Month (≤ 29 days)</option>
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-sm btn-outline-secondary" id="btnClearFilters">
+                        <i class="bi bi-x-circle me-1"></i>Clear
                     </button>
                 </div>
             </div>
@@ -255,8 +236,7 @@ $fullName  = e($_SESSION['admin_full_name'] ?? 'Admin');
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Assigned By <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="assigned_by" maxlength="100"
-                                   placeholder="e.g. Sarah Johnson" required>
+                            <select class="form-select" name="assigned_by" id="addAssignedBy" required><option value="">— Select Sales User —</option></select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Status</label>
@@ -325,8 +305,7 @@ $fullName  = e($_SESSION['admin_full_name'] ?? 'Admin');
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Assigned By <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="editAssignedBy" name="assigned_by"
-                                   maxlength="100" required>
+                            <select class="form-select" id="editAssignedBy" name="assigned_by" required><option value="">— Select Sales User —</option></select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Status</label>

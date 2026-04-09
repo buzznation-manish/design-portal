@@ -1,21 +1,72 @@
 /**
  * Design Portal – Admin Panel JavaScript
- * Handles AJAX project management, search, sort, pagination, modals, toasts
+ * Handles AJAX project management, search, sort, pagination, modals, toasts, filters
  */
 
 $(function () {
 
   /* ── State ─────────────────────────────────────────────── */
-  let currentPage    = 1;
-  let currentSort    = 'id';
-  let currentSortDir = 'DESC';
-  let currentSearch  = '';
-  let debounceTimer  = null;
-  let deleteTargetId = null;
+  let currentPage      = 1;
+  let currentSort      = 'id';
+  let currentSortDir   = 'DESC';
+  let currentSearch    = '';
+  let debounceTimer    = null;
+  let deleteTargetId   = null;
+  let filterClient     = '';
+  let filterEvent      = '';
+  let filterAssignedBy = '';
+  let filterDesigner   = '';
+  let filterDays       = '';
 
-  // Read CSRF token from hidden input rendered by PHP
+  // Cached option lists
+  let designerOptions  = [];
+  let salesUserOptions = [];
+
   function csrfToken() {
     return $('#csrfTokenVal').val();
+  }
+
+  /* ── Load Filter Options ───────────────────────────────── */
+  function loadFilterOptions() {
+    $.ajax({
+      url: '/ajax/get_filter_options.php',
+      method: 'GET',
+      dataType: 'json',
+      success: function (res) {
+        if (!res.success) return;
+        designerOptions  = res.designers  || [];
+        salesUserOptions = res.sales_users || [];
+
+        // Populate filter selects
+        var $fa = $('#filterAssignedBy');
+        var $fd = $('#filterDesigner');
+        $fa.find('option:not(:first)').remove();
+        $fd.find('option:not(:first)').remove();
+        salesUserOptions.forEach(function (name) {
+          $fa.append('<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>');
+        });
+        designerOptions.forEach(function (name) {
+          $fd.append('<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>');
+        });
+
+        // Populate modal selects
+        populateModalSelects();
+      }
+    });
+  }
+
+  function populateModalSelects() {
+    // Sales user selects in modals
+    var selectors = ['#addAssignedBy', '#editAssignedBy'];
+    selectors.forEach(function (sel) {
+      var $sel = $(sel);
+      var cur  = $sel.val();
+      $sel.find('option:not(:first)').remove();
+      salesUserOptions.forEach(function (name) {
+        $sel.append('<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>');
+      });
+      if (cur) $sel.val(cur);
+    });
   }
 
   /* ── Load Projects ─────────────────────────────────────── */
@@ -26,11 +77,16 @@ $(function () {
       url: '/admin/ajax/get_projects.php',
       method: 'GET',
       data: {
-        search:   currentSearch,
-        sort_col: currentSort,
-        sort_dir: currentSortDir,
-        page:     currentPage,
-        per_page: 10
+        search:             currentSearch,
+        sort_col:           currentSort,
+        sort_dir:           currentSortDir,
+        page:               currentPage,
+        per_page:           10,
+        filter_client:      filterClient,
+        filter_event:       filterEvent,
+        filter_assigned_by: filterAssignedBy,
+        filter_designer:    filterDesigner,
+        filter_days:        filterDays
       },
       dataType: 'json',
       success: function (res) {
@@ -68,9 +124,8 @@ $(function () {
   }
 
   function renderRow(p) {
-    // Remaining days display
-    const days     = parseInt(p.remaining_days, 10);
-    const status   = p.status;
+    const days   = parseInt(p.remaining_days, 10);
+    const status = p.status;
     let daysHtml;
 
     if (status === 'Completed') {
@@ -83,7 +138,6 @@ $(function () {
       daysHtml = '<span>' + days + ' day' + (days === 1 ? '' : 's') + '</span>';
     }
 
-    // Status badge
     const badgeClass = {
       'Pending':   'badge-status-pending',
       'Ongoing':   'badge-status-ongoing',
@@ -96,7 +150,6 @@ $(function () {
       'Completed': 'bi-check-circle'
     }[status] || 'bi-hourglass';
 
-    // Determine if urgent row (not completed, < 3 days)
     const isUrgent = (status !== 'Completed') && (days < 3);
 
     const designers = p.designers
@@ -142,13 +195,11 @@ $(function () {
 
     const ul = $('<ul class="pagination pagination-sm mb-0">');
 
-    // Prev
     ul.append(
       $('<li class="page-item' + (cur === 1 ? ' disabled' : '') + '">')
         .html('<a class="page-link" href="#" data-page="' + (cur - 1) + '"><i class="bi bi-chevron-left"></i></a>')
     );
 
-    // Page numbers (max 7 visible)
     let start = Math.max(1, cur - 3);
     let end   = Math.min(pages, start + 6);
     if (end - start < 6) start = Math.max(1, end - 6);
@@ -170,7 +221,6 @@ $(function () {
       ul.append($('<li class="page-item">').html('<a class="page-link" href="#" data-page="' + pages + '">' + pages + '</a>'));
     }
 
-    // Next
     ul.append(
       $('<li class="page-item' + (cur === pages ? ' disabled' : '') + '">')
         .html('<a class="page-link" href="#" data-page="' + (cur + 1) + '"><i class="bi bi-chevron-right"></i></a>')
@@ -204,6 +254,47 @@ $(function () {
     }, 400);
   });
 
+  /* ── Filter Handlers ───────────────────────────────────── */
+  var filterDebounce = null;
+
+  $('#filterClient, #filterEvent').on('input', function () {
+    clearTimeout(filterDebounce);
+    filterDebounce = setTimeout(function () {
+      filterClient = $('#filterClient').val().trim();
+      filterEvent  = $('#filterEvent').val().trim();
+      loadProjects(1);
+    }, 400);
+  });
+
+  $('#filterAssignedBy').on('change', function () {
+    filterAssignedBy = $(this).val();
+    loadProjects(1);
+  });
+
+  $('#filterDesigner').on('change', function () {
+    filterDesigner = $(this).val();
+    loadProjects(1);
+  });
+
+  $('#filterDays').on('change', function () {
+    filterDays = $(this).val();
+    loadProjects(1);
+  });
+
+  $('#btnClearFilters').on('click', function () {
+    filterClient     = '';
+    filterEvent      = '';
+    filterAssignedBy = '';
+    filterDesigner   = '';
+    filterDays       = '';
+    $('#filterClient').val('');
+    $('#filterEvent').val('');
+    $('#filterAssignedBy').val('');
+    $('#filterDesigner').val('');
+    $('#filterDays').val('');
+    loadProjects(1);
+  });
+
   /* ── Sort ──────────────────────────────────────────────── */
   $(document).on('click', '.sortable', function () {
     const col = $(this).data('col');
@@ -230,6 +321,7 @@ $(function () {
     $('#addProjectForm')[0].reset();
     $('#addDesignerList').html(designerRowHtml(''));
     $('#addModalError').addClass('d-none').text('');
+    populateModalSelects();
     const modal = new bootstrap.Modal(document.getElementById('addProjectModal'));
     modal.show();
   }
@@ -290,6 +382,7 @@ $(function () {
   $(document).on('click', '.btn-edit', function () {
     const id = $(this).data('id');
     $('#editModalError').addClass('d-none').text('');
+    populateModalSelects();
 
     $.ajax({
       url: '/admin/ajax/get_project.php',
@@ -430,10 +523,15 @@ $(function () {
   });
 
   /* ── Helpers ───────────────────────────────────────────── */
-  function designerRowHtml(value) {
-    return '<div class="designer-row">' +
-      '<input type="text" class="form-control form-control-sm" name="designers[]" placeholder="Designer name" value="' + escHtml(value) + '" maxlength="100">' +
-      '<button type="button" class="btn btn-sm btn-outline-danger btn-remove-designer" title="Remove">' +
+  function designerRowHtml(selectedValue) {
+    var options = '<option value="">— Select Designer —</option>';
+    designerOptions.forEach(function (name) {
+      var sel = (name === selectedValue) ? ' selected' : '';
+      options += '<option value="' + escHtml(name) + '"' + sel + '>' + escHtml(name) + '</option>';
+    });
+    return '<div class="designer-row d-flex gap-2 mb-2">' +
+      '<select class="form-select form-select-sm" name="designers[]">' + options + '</select>' +
+      '<button type="button" class="btn btn-sm btn-outline-danger btn-remove-designer flex-shrink-0" title="Remove">' +
         '<i class="bi bi-x-lg"></i>' +
       '</button>' +
     '</div>';
@@ -449,9 +547,9 @@ $(function () {
     fd.append('assigned_by', $(formSelector + ' [name="assigned_by"]').val() || '');
     fd.append('status',      $(formSelector + ' [name="status"]').val() || '');
 
-    $(designerSelector + ' input[name="designers[]"]').each(function () {
-      const v = $(this).val().trim();
-      if (v) fd.append('designers[]', v);
+    $(designerSelector + ' select[name="designers[]"]').each(function () {
+      const v = $(this).val();
+      if (v && v.trim()) fd.append('designers[]', v.trim());
     });
 
     return fd;
@@ -515,6 +613,7 @@ $(function () {
   }
 
   /* ── Init ──────────────────────────────────────────────── */
+  loadFilterOptions();
   loadProjects(1);
 
 });

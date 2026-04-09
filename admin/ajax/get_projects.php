@@ -17,9 +17,15 @@ $sortDir = trim($_GET['sort_dir'] ?? 'DESC');
 $page    = max(1, (int)($_GET['page']     ?? 1));
 $perPage = min(100, max(1, (int)($_GET['per_page'] ?? 10)));
 
-$result = getProjects($search, $sortCol, $sortDir, $page, $perPage, true);
+$filters = [];
+if (($v = trim($_GET['filter_client'] ?? '')) !== '')      $filters['client_name']    = $v;
+if (($v = trim($_GET['filter_event']  ?? '')) !== '')      $filters['event_name']     = $v;
+if (($v = trim($_GET['filter_assigned_by'] ?? '')) !== '') $filters['assigned_by']    = $v;
+if (($v = trim($_GET['filter_designer'] ?? '')) !== '')    $filters['designer']       = $v;
+if (($v = trim($_GET['filter_days'] ?? '')) !== '')        $filters['remaining_days'] = $v;
 
-// Escape all string fields before sending to client
+$result = getProjects($search, $sortCol, $sortDir, $page, $perPage, true, $filters);
+
 $escaped = array_map(function (array $p): array {
     return [
         'id'             => (int)$p['id'],

@@ -15,9 +15,15 @@ $sortDir = trim($_GET['sort_dir'] ?? 'DESC');
 $page    = max(1, (int)($_GET['page']     ?? 1));
 $perPage = min(100, max(1, (int)($_GET['per_page'] ?? 10)));
 
-$result = getProjects($search, $sortCol, $sortDir, $page, $perPage, false);
+$filters = [];
+if (($v = trim($_GET['filter_client'] ?? '')) !== '')      $filters['client_name']    = $v;
+if (($v = trim($_GET['filter_event']  ?? '')) !== '')      $filters['event_name']     = $v;
+if (($v = trim($_GET['filter_assigned_by'] ?? '')) !== '') $filters['assigned_by']    = $v;
+if (($v = trim($_GET['filter_designer'] ?? '')) !== '')    $filters['designer']       = $v;
+if (($v = trim($_GET['filter_days'] ?? '')) !== '')        $filters['remaining_days'] = $v;
 
-// Escape string output
+$result = getProjects($search, $sortCol, $sortDir, $page, $perPage, false, $filters);
+
 $escaped = array_map(function (array $p): array {
     return [
         'id'             => (int)$p['id'],
@@ -26,6 +32,7 @@ $escaped = array_map(function (array $p): array {
         'designers'      => htmlspecialchars($p['designers'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
         'start_date'     => htmlspecialchars($p['start_date'],   ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
         'end_date'       => htmlspecialchars($p['end_date'],     ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'assigned_by'    => htmlspecialchars($p['assigned_by'],  ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
         'status'         => htmlspecialchars($p['status'],       ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
         'remaining_days' => (int)$p['remaining_days'],
     ];

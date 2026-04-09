@@ -61,3 +61,18 @@ INSERT INTO project_designers (project_id, designer_name) VALUES
 (5, 'Charlie Lee'),
 (5, 'Eve Taylor'),
 (5, 'Frank Miller');
+
+CREATE TABLE IF NOT EXISTS designers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS sales_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT IGNORE INTO designers (name) VALUES ('Alice Wong'),('Bob Smith'),('Charlie Lee'),('Diana Prince'),('Eve Taylor'),('Frank Miller');
+INSERT IGNORE INTO sales_users (name) VALUES ('Sarah Johnson'),('Michael Brown'),('Emily Davis');

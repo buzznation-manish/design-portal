@@ -1,16 +1,43 @@
 /**
  * Design Portal – Client View JavaScript
- * Read-only project table with search, sort, pagination
+ * Read-only project table with search, sort, pagination, filters
  */
 
 $(function () {
 
   /* ── State ─────────────────────────────────────────────── */
-  let currentPage    = 1;
-  let currentSort    = 'id';
-  let currentSortDir = 'DESC';
-  let currentSearch  = '';
-  let debounceTimer  = null;
+  let currentPage      = 1;
+  let currentSort      = 'id';
+  let currentSortDir   = 'DESC';
+  let currentSearch    = '';
+  let debounceTimer    = null;
+  let filterClient     = '';
+  let filterEvent      = '';
+  let filterAssignedBy = '';
+  let filterDesigner   = '';
+  let filterDays       = '';
+
+  /* ── Load Filter Options ───────────────────────────────── */
+  function loadFilterOptions() {
+    $.ajax({
+      url: '/ajax/get_filter_options.php',
+      method: 'GET',
+      dataType: 'json',
+      success: function (res) {
+        if (!res.success) return;
+        var $fa = $('#filterAssignedBy');
+        var $fd = $('#filterDesigner');
+        $fa.find('option:not(:first)').remove();
+        $fd.find('option:not(:first)').remove();
+        (res.sales_users || []).forEach(function (name) {
+          $fa.append('<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>');
+        });
+        (res.designers || []).forEach(function (name) {
+          $fd.append('<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>');
+        });
+      }
+    });
+  }
 
   /* ── Load Projects ─────────────────────────────────────── */
   function loadProjects(page) {
@@ -20,11 +47,16 @@ $(function () {
       url: '/ajax/get_projects.php',
       method: 'GET',
       data: {
-        search:   currentSearch,
-        sort_col: currentSort,
-        sort_dir: currentSortDir,
-        page:     currentPage,
-        per_page: 10
+        search:             currentSearch,
+        sort_col:           currentSort,
+        sort_dir:           currentSortDir,
+        page:               currentPage,
+        per_page:           10,
+        filter_client:      filterClient,
+        filter_event:       filterEvent,
+        filter_assigned_by: filterAssignedBy,
+        filter_designer:    filterDesigner,
+        filter_days:        filterDays
       },
       dataType: 'json',
       success: function (res) {
@@ -180,6 +212,47 @@ $(function () {
     }, 400);
   });
 
+  /* ── Filter Handlers ───────────────────────────────────── */
+  var filterDebounce = null;
+
+  $('#filterClient, #filterEvent').on('input', function () {
+    clearTimeout(filterDebounce);
+    filterDebounce = setTimeout(function () {
+      filterClient = $('#filterClient').val().trim();
+      filterEvent  = $('#filterEvent').val().trim();
+      loadProjects(1);
+    }, 400);
+  });
+
+  $('#filterAssignedBy').on('change', function () {
+    filterAssignedBy = $(this).val();
+    loadProjects(1);
+  });
+
+  $('#filterDesigner').on('change', function () {
+    filterDesigner = $(this).val();
+    loadProjects(1);
+  });
+
+  $('#filterDays').on('change', function () {
+    filterDays = $(this).val();
+    loadProjects(1);
+  });
+
+  $('#btnClearFilters').on('click', function () {
+    filterClient     = '';
+    filterEvent      = '';
+    filterAssignedBy = '';
+    filterDesigner   = '';
+    filterDays       = '';
+    $('#filterClient').val('');
+    $('#filterEvent').val('');
+    $('#filterAssignedBy').val('');
+    $('#filterDesigner').val('');
+    $('#filterDays').val('');
+    loadProjects(1);
+  });
+
   /* ── Sort ──────────────────────────────────────────────── */
   $(document).on('click', '.sortable', function () {
     const col = $(this).data('col');
@@ -218,6 +291,7 @@ $(function () {
   }
 
   /* ── Init ──────────────────────────────────────────────── */
+  loadFilterOptions();
   loadProjects(1);
 
 });
