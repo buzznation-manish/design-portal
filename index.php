@@ -142,6 +142,7 @@ $stats = getDashboardStats();
                             Event Name <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span>
                         </th>
                         <th>Designers</th>
+                        <th>Assigned By</th>
                         <th class="sortable" data-col="start_date">
                             Start Date <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span>
                         </th>
@@ -156,7 +157,7 @@ $stats = getDashboardStats();
                 </thead>
                 <tbody id="projectTableBody">
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
+                        <td colspan="8" class="text-center py-4 text-muted">
                             <span class="spinner-border spinner-border-sm me-2"></span>Loading…
                         </td>
                     </tr>

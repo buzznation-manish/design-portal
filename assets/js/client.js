@@ -82,7 +82,7 @@ $(function () {
 
     if (!projects || projects.length === 0) {
       tbody.html(
-        '<tr><td colspan="7" class="text-center text-muted py-5">' +
+        '<tr><td colspan="8" class="text-center text-muted py-5">' +
         '<i class="bi bi-inbox fs-2 d-block mb-2"></i>No projects found.</td></tr>'
       );
       return;
@@ -134,6 +134,7 @@ $(function () {
       '<td class="fw-semibold">' + escHtml(p.client_name) + '</td>' +
       '<td>' + escHtml(p.event_name) + '</td>' +
       '<td>' + designers + '</td>' +
+      '<td>' + escHtml(p.assigned_by || '—') + '</td>' +
       '<td>' + escHtml(p.start_date) + '</td>' +
       '<td>' + escHtml(p.end_date) + '</td>' +
       '<td><span class="badge-status ' + badgeClass + '">' +
@@ -285,7 +286,7 @@ $(function () {
 
   function showError(msg) {
     $('#projectTableBody').html(
-      '<tr><td colspan="7" class="text-center text-danger py-4">' +
+      '<tr><td colspan="8" class="text-center text-danger py-4">' +
       '<i class="bi bi-exclamation-triangle me-1"></i>' + escHtml(msg) + '</td></tr>'
     );
   }
