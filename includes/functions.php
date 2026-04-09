@@ -40,16 +40,21 @@ function calculateRemainingDays(string $endDate): int {
  * Get dashboard statistics.
  */
 function getDashboardStats(): array {
-    $pdo = getDBConnection();
-    $total     = $pdo->query("SELECT COUNT(*) FROM projects")->fetchColumn();
-    $ongoing   = $pdo->query("SELECT COUNT(*) FROM projects WHERE status = 'Ongoing'")->fetchColumn();
-    $completed = $pdo->query("SELECT COUNT(*) FROM projects WHERE status = 'Completed'")->fetchColumn();
-    $pending   = $pdo->query("SELECT COUNT(*) FROM projects WHERE status = 'Pending'")->fetchColumn();
+    $pdo  = getDBConnection();
+    // Single query using conditional aggregation to avoid multiple round-trips
+    $row = $pdo->query(
+        "SELECT
+            COUNT(*)                                     AS total,
+            SUM(status = 'Ongoing')                      AS ongoing,
+            SUM(status = 'Completed')                    AS completed,
+            SUM(status = 'Pending')                      AS pending
+         FROM projects"
+    )->fetch();
     return [
-        'total'     => (int)$total,
-        'ongoing'   => (int)$ongoing,
-        'completed' => (int)$completed,
-        'pending'   => (int)$pending,
+        'total'     => (int)($row['total']     ?? 0),
+        'ongoing'   => (int)($row['ongoing']   ?? 0),
+        'completed' => (int)($row['completed'] ?? 0),
+        'pending'   => (int)($row['pending']   ?? 0),
     ];
 }
 

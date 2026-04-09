@@ -1,0 +1,25 @@
+# Dependencies / build artifacts
+/vendor/
+/node_modules/
+
+# Environment / secrets
+.env
+*.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP error logs
+error_log
+php_errors.log
+*.log
+
+# Compiled assets (if any)
+/dist/
